@@ -1,6 +1,6 @@
 const express = require('express');
 const Tesseract = require('tesseract.js');
-const fetch = require('node-fetch');
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
@@ -8,13 +8,20 @@ const app = express();
 app.use(express.json());
 
 async function descargarImagen(imageUrl) {
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error("Error descargando la imagen");
+    try {
+        const response = await axios({
+            url: imageUrl,
+            responseType: 'arraybuffer'
+        });
 
-    const buffer = await response.buffer();
-    const tempFilePath = path.join(__dirname, 'temp.jpg');
-    fs.writeFileSync(tempFilePath, buffer);
-    return tempFilePath;
+        if (response.status !== 200) throw new Error("Error al obtener la imagen");
+
+        const tempFilePath = path.join(__dirname, 'temp.jpg');
+        fs.writeFileSync(tempFilePath, response.data);
+        return tempFilePath;
+    } catch (error) {
+        throw new Error("Error descargando la imagen");
+    }
 }
 
 app.post('/ocr', async (req, res) => {
