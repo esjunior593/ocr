@@ -1,12 +1,21 @@
 const express = require('express');
 const Tesseract = require('tesseract.js');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const fetch = require('node-fetch');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(express.json());
-app.use(bodyParser.json()); // 🔹 Agrega esta línea
-app.use(cors());
+
+async function descargarImagen(imageUrl) {
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error("Error descargando la imagen");
+
+    const buffer = await response.buffer();
+    const tempFilePath = path.join(__dirname, 'temp.jpg');
+    fs.writeFileSync(tempFilePath, buffer);
+    return tempFilePath;
+}
 
 app.post('/ocr', async (req, res) => {
     const { imageUrl } = req.body;
@@ -16,9 +25,18 @@ app.post('/ocr', async (req, res) => {
     }
 
     try {
-        const { data: { text } } = await Tesseract.recognize(imageUrl, 'spa');
+        // Descargamos la imagen y la guardamos temporalmente
+        const imagePath = await descargarImagen(imageUrl);
+
+        // Procesamos la imagen con Tesseract
+        const { data: { text } } = await Tesseract.recognize(imagePath, 'spa');
+
+        // Eliminamos la imagen temporal después de procesarla
+        fs.unlinkSync(imagePath);
+
         res.json({ text });
     } catch (error) {
+        console.error("Error en OCR:", error);
         res.status(500).json({ error: "Error en el procesamiento de OCR", details: error.message });
     }
 });
