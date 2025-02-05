@@ -1,19 +1,20 @@
-FROM node:18
+# Usa una imagen de Node.js con Tesseract preinstalado
+FROM ghcr.io/tesseract-ocr/tesseract4:latest
 
-# Instalar Tesseract OCR
-RUN apt-get update && apt-get install -y tesseract-ocr
+# Instalar Node.js manualmente
+RUN apt-get update && apt-get install -y nodejs npm
 
 # Crear directorio de trabajo
 WORKDIR /app
 
 # Copiar archivos de la aplicación
-COPY package.json package-lock.json ./
+COPY package.json ./
 RUN npm install
 
 COPY . .
 
-# Exponer puerto
+# Exponer el puerto de la API
 EXPOSE 3000
 
-# Comando de inicio
+# Comando para iniciar el servidor
 CMD ["node", "server.js"]
