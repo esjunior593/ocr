@@ -1,8 +1,8 @@
-# Usa una imagen de Node.js con Tesseract preinstalado
-FROM ghcr.io/tesseract-ocr/tesseract4:latest
+# Usa una imagen oficial de Node.js
+FROM node:18
 
-# Instalar Node.js manualmente
-RUN apt-get update && apt-get install -y nodejs npm
+# Instalar Tesseract OCR manualmente
+RUN apt-get update && apt-get install -y tesseract-ocr
 
 # Crear directorio de trabajo
 WORKDIR /app
