@@ -1,9 +1,11 @@
 const express = require('express');
 const Tesseract = require('tesseract.js');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 const app = express();
 app.use(express.json());
+app.use(bodyParser.json()); // 🔹 Agrega esta línea
 app.use(cors());
 
 app.post('/ocr', async (req, res) => {
